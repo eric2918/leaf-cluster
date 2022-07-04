@@ -18,7 +18,7 @@ import (
 // -------------------------
 type Processor struct {
 	littleEndian bool
-	msgInfo      []*MsgInfo
+	msgInfo      map[uint16]*MsgInfo
 	msgID        map[reflect.Type]uint16
 }
 
@@ -39,6 +39,7 @@ type MsgRaw struct {
 func NewProcessor() *Processor {
 	p := new(Processor)
 	p.littleEndian = false
+	p.msgInfo = make(map[uint16]*MsgInfo)
 	p.msgID = make(map[reflect.Type]uint16)
 	return p
 }
@@ -49,7 +50,7 @@ func (p *Processor) SetByteOrder(littleEndian bool) {
 }
 
 // It's dangerous to call the method on routing or marshaling (unmarshaling)
-func (p *Processor) Register(msg proto.Message) uint16 {
+func (p *Processor) Register(msgId uint16, msg proto.Message) uint16 {
 	msgType := reflect.TypeOf(msg)
 	if msgType == nil || msgType.Kind() != reflect.Ptr {
 		log.Fatal("protobuf message pointer required")
@@ -63,10 +64,9 @@ func (p *Processor) Register(msg proto.Message) uint16 {
 
 	i := new(MsgInfo)
 	i.msgType = msgType
-	p.msgInfo = append(p.msgInfo, i)
-	id := uint16(len(p.msgInfo) - 1)
-	p.msgID[msgType] = id
-	return id
+	p.msgInfo[msgId] = i
+	p.msgID[msgType] = msgId
+	return msgId
 }
 
 // It's dangerous to call the method on routing or marshaling (unmarshaling)
@@ -183,6 +183,6 @@ func (p *Processor) Marshal(msg interface{}) ([][]byte, error) {
 // goroutine safe
 func (p *Processor) Range(f func(id uint16, t reflect.Type)) {
 	for id, i := range p.msgInfo {
-		f(uint16(id), i.msgType)
+		f(id, i.msgType)
 	}
 }
