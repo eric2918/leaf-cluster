@@ -67,8 +67,9 @@ func Assert(i interface{}) []interface{} {
 func (s *Server) Register(id interface{}, f interface{}) {
 	switch f.(type) {
 	case func([]interface{}):
-	case func([]interface{}) interface{}:
-	case func([]interface{}) []interface{}:
+	case func([]interface{}) error:
+	case func([]interface{}) (interface{}, error):
+	case func([]interface{}) ([]interface{}, error):
 	default:
 		panic(fmt.Sprintf("function id %v: definition of function is invalid", id))
 	}
@@ -116,15 +117,18 @@ func (s *Server) exec(ci *CallInfo) (err error) {
 	case func([]interface{}):
 		ci.f.(func([]interface{}))(ci.args)
 		return s.ret(ci, &RetInfo{})
-	case func([]interface{}) interface{}:
-		ret := ci.f.(func([]interface{}) interface{})(ci.args)
-		return s.ret(ci, &RetInfo{Ret: ret})
-	case func([]interface{}) []interface{}:
-		ret := ci.f.(func([]interface{}) []interface{})(ci.args)
-		return s.ret(ci, &RetInfo{Ret: ret})
+	case func([]interface{}) error:
+		err := ci.f.(func([]interface{}) error)(ci.args)
+		return s.ret(ci, &RetInfo{Err: err})
+	case func([]interface{}) (interface{}, error):
+		ret, err := ci.f.(func([]interface{}) (interface{}, error))(ci.args)
+		return s.ret(ci, &RetInfo{Ret: ret, Err: err})
+	case func([]interface{}) ([]interface{}, error):
+		ret, err := ci.f.(func([]interface{}) ([]interface{}, error))(ci.args)
+		return s.ret(ci, &RetInfo{Ret: ret, Err: err})
+	default:
+		panic("bug")
 	}
-
-	panic("bug")
 }
 
 func (s *Server) Exec(ci *CallInfo) {
