@@ -12,4 +12,8 @@ type Agent interface {
 	Destroy()
 	UserData() interface{}
 	SetUserData(data interface{})
+	PlayerData() interface{}
+	SetPlayerData(data interface{})
+	ConfigData() interface{}
+	SetConfigData(data interface{})
 }

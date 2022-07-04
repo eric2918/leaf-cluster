@@ -88,6 +88,8 @@ type agent struct {
 	conn     network.Conn
 	gate     *Gate
 	userData interface{}
+	players  interface{}
+	configs  interface{}
 }
 
 func (a *agent) Run() {
@@ -158,4 +160,20 @@ func (a *agent) UserData() interface{} {
 
 func (a *agent) SetUserData(data interface{}) {
 	a.userData = data
+}
+
+func (a *agent) PlayerData() interface{} {
+	return a.players
+}
+
+func (a *agent) SetPlayerData(data interface{}) {
+	a.players = data
+}
+
+func (a *agent) ConfigData() interface{} {
+	return a.configs
+}
+
+func (a *agent) SetConfigData(data interface{}) {
+	a.configs = data
 }
