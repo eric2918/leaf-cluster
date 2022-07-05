@@ -263,11 +263,13 @@ func (c *Client) f(id interface{}, n int) (f interface{}, err error) {
 	var ok bool
 	switch n {
 	case 0:
-		_, ok = f.(func([]interface{}))
+		_, ok = f.(func([]interface{}) error)
 	case 1:
-		_, ok = f.(func([]interface{}) interface{})
+		_, ok = f.(func([]interface{}) (interface{}, error))
 	case 2:
-		_, ok = f.(func([]interface{}) []interface{})
+		_, ok = f.(func([]interface{}) ([]interface{}, error))
+	case -1:
+		ok = true
 	default:
 		panic("bug")
 	}
